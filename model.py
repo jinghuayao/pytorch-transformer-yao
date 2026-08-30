@@ -16,7 +16,7 @@ class LayerNormalization(nn.Module):
     def forward(self, x):
         # x: (B, seq_len, hidden_size)
         mean = x.mean(dim=-1, keepdim=True) # (B, seq_len, 1)
-        std = x.stad(dim=-1, keepdim=True) # (B, seq_len, 1)
+        std = x.std(dim=-1, keepdim=True) # (B, seq_len, 1)
         return self.alpha * (x - mean) / (std + self.eps) + self.bias
 
 
@@ -59,15 +59,15 @@ class PositionalEncoding(nn.Module):
         # make a matrix of size (seq_len, d_model)
         pe = torch.zeros(self.seq_len, self.d_model)
         # make a vector of shape (seq_len, ) then unsequeeze to make it shape (seq_len, 1) for broadcasting
-        position = torch.arange(0, seq_len, dtype=torch.float).unsequeeze(1)
+        position = torch.arange(0, seq_len, dtype=torch.float).unsqueeze(1)
         # make a vector of shape (d_model // 2, )
         div_term = torch.exp(torch.arange(0, self.d_model, 2).float() * (-math.log(10000.0) / self.d_model))
 
         # note the broadcasting of position * div_term yields a shape (seq_len, d_model // 2)
         pe[:, 0::2] = torch.sin(position * div_term) # sin(position * (10000 ** (-2 * i / d_model)))
-        pe[:, 1::2] = torch.sin(position * div_term[:self.d_model // 2]) # cos(position * (10000 ** (-2 * i / d_model))); [:d_model//2] deals with d_model being odd case
+        pe[:, 1::2] = torch.cos(position * div_term[:self.d_model // 2]) # cos(position * (10000 ** (-2 * i / d_model))); [:d_model//2] deals with d_model being odd case
         # add a batch dimension to the positional encoding
-        pe = pe.unsequeeze(0) # (seq_len, d_model) -> (1, seq_len, d_model)
+        pe = pe.unsqueeze(0) # (seq_len, d_model) -> (1, seq_len, d_model)
         # register the positional encoding as a buffer
         self.register_buffer('pe', pe)
 
@@ -214,7 +214,7 @@ class Decoder(nn.Module):
 
     def forward(self, x, encoder_output, src_mask, tgt_mask):
         for layer in self.layers:
-            x = layer(x, encoder_output, encoder_output, src_mask, tgt_mask)
+            x = layer(x, encoder_output, src_mask, tgt_mask)
 
         return self.norm(x)
 
@@ -317,11 +317,11 @@ def build_transformer(src_vocab_size: int, tgt_vocab_size: int,
 
 
     # 6. create the whole transform
-    transformer = Transformer(encoder, decoder, src_embed, tgt_embed, src_pos, tgt_embed, projection_layer)
-
+    transformer = Transformer(encoder, decoder, src_embed, tgt_embed, src_pos, tgt_pos, projection_layer)
+    
 
     # lastly, initialize the params
-    for p in transformer.parameters:
+    for p in transformer.parameters():
         if p.dim() > 1:
             nn.init.xavier_uniform(p)
 
