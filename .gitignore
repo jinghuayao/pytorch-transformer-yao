@@ -3,3 +3,5 @@ model_saved_*
 runs
 model_saved_256_weights/
 
+model_saved_256_weights/tmodel_001.pt
+model_saved_256_weights/tmodel_002.pt

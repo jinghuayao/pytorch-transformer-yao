@@ -10,7 +10,13 @@ import sys
 
 
 def translate(sentence: str):
-    pass
+
+    # define device, tokenizers, and model
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"device: {device}")
+    config = get_config()
+    tokenizer = Tokenizer.from_file(str(Path(config['tokenizer_file'].format(config['lang_src']))))
+    tokenizer = Tokenizer.from_file()
 
 
 
@@ -30,7 +36,7 @@ if __name__ == "__main__":
     print(f"{current_filename}: run through without any issue.")
 
     translate(sys.argv[1] if len(sys.argv) > 1 else "I am not a very good student. Hahahahahaha!")
-    
+
 
 
 
